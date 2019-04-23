@@ -31,10 +31,10 @@ void
 Chromosome::mutate()
 {
   // Add your implementation here
-  auto max = order.size()
+  auto max = order_.size();
   int p1 = rand() % max;
   int p2 = rand() % max;
-  while(p1=p2){
+  while(p1==p2){
     p2 = rand() % max;
   }
   std::swap(order_[p1],order_[p2]);
@@ -51,9 +51,9 @@ Chromosome::recombine(const Chromosome* other)
   assert(other->is_valid());
 
   std::pair<Chromosome*, Chromosome*> children;
-  
-  child1=Chromosome::create_crossover_child(this*, other,0, cities_ptr_->size());
-  child2=Chromosome::create_crossover_child(other, this*,0, cities_ptr_->size());
+
+  auto child1=Chromosome::create_crossover_child(this, other,0, order_.size());
+  auto child2=Chromosome::create_crossover_child(other, this,0, order_.size());
   
   assert(child1->is_valid());
   children.first = child1;
@@ -102,7 +102,7 @@ double
 Chromosome::get_fitness() const
 {
 
-  return 1/total_path_distance(order_);
+  return 1/cities_ptr_->total_path_distance(order_);
 
 }
 
@@ -112,7 +112,7 @@ Chromosome::get_fitness() const
 bool
 Chromosome::is_valid() const
 {
-  for(unsigned int i=0; i<order_.size; i++){
+  for(unsigned int i=0; i<order_.size(); i++){
     if(find(order_.begin(),order_.end(),i)==order_.end()){return false;}
   }
   return true;
