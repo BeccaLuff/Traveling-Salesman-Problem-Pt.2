@@ -47,13 +47,16 @@ Chromosome::mutate()
 std::pair<Chromosome*, Chromosome*>
 Chromosome::recombine(const Chromosome* other)
 {
-  assert(is_valid());
+assert(is_valid());
   assert(other->is_valid());
 
+  auto max = order_.size();
   std::pair<Chromosome*, Chromosome*> children;
+  unsigned b = rand() % max;
+  unsigned e = rand() % (max-1) + b;
 
-  auto child1=Chromosome::create_crossover_child(this, other,0, order_.size());
-  auto child2=Chromosome::create_crossover_child(other, this,0, order_.size());
+  auto child1=Chromosome::create_crossover_child(this, other, b , e);
+  auto child2=Chromosome::create_crossover_child(other, this,b , e);
   
   assert(child1->is_valid());
   children.first = child1;
