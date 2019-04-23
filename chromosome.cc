@@ -31,7 +31,13 @@ void
 Chromosome::mutate()
 {
   // Add your implementation here
-
+  auto max = order.size()
+  int p1 = rand() % max;
+  int p2 = rand() % max;
+  while(p1=p2){
+    p2 = rand() % max;
+  }
+  std::swap(order_[p1],order_[p2]);
   assert(is_valid());
 }
 
@@ -44,7 +50,18 @@ Chromosome::recombine(const Chromosome* other)
   assert(is_valid());
   assert(other->is_valid());
 
-  // Add your implementation here
+  std::pair<Chromosome*, Chromosome*> children;
+  
+  child1=Chromosome::create_crossover_child(this*, other,0, cities_ptr_->size());
+  child2=Chromosome::create_crossover_child(other, this*,0, cities_ptr_->size());
+  
+  assert(child1->is_valid());
+  children.first = child1;
+  
+  assert(child2->is_valid());
+  children.second = child2;
+
+  return children;
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -84,7 +101,9 @@ Chromosome::create_crossover_child(const Chromosome* p1, const Chromosome* p2,
 double
 Chromosome::get_fitness() const
 {
-  // Add your implementation here
+
+  return 1/total_path_distance(order_);
+
 }
 
 // A chromsome is valid if it has no repeated values in its permutation,
@@ -93,7 +112,10 @@ Chromosome::get_fitness() const
 bool
 Chromosome::is_valid() const
 {
-  // Add your implementation here
+  for(unsigned int i=0; i<order_.size; i++){
+    if(find(order_.begin(),order_.end(),i)==order_.end()){return false;}
+  }
+  return true;
 }
 
 // Find whether a certain value appears in a given range of the chromosome.
@@ -102,5 +124,5 @@ Chromosome::is_valid() const
 bool
 Chromosome::is_in_range(unsigned value, unsigned begin, unsigned end) const
 {
-  // Add your implementation here
+  return (value>=begin)&&(value<end);
 }
