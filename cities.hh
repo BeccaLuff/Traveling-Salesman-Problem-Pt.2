@@ -38,6 +38,8 @@ class Cities {
   std::vector<coord_t> get_list() const {return city_list_;};
 
   void add_coord(coord_t coord){city_list_.push_back(coord);};
+ 
+  int size() const {return city_list_.size();}
   
   unsigned size() const {return city_list_.size();}
  private:
