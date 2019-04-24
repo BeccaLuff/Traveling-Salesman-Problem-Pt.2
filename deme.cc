@@ -10,13 +10,18 @@
 // Also receives a mutation rate in the range [0-1].
 Deme::Deme(const Cities* cities_ptr, unsigned pop_size, double mut_rate)
 {
-  // Add your implementation here
+ pop_size_ = pop_size;
+ mut_rate_ = mut_rate;
+ for(unsigned i = 0; i < pop_size; i++){
+	 pop_.push_back(new Chromosome(cities_ptr));
+ }
+
 }
 
 // Clean up as necessary
 Deme::~Deme()
 {
-  // Add your implementation here
+  
 }
 
 // Evolve a single generation of new chromosomes, as follows:
@@ -28,18 +33,61 @@ Deme::~Deme()
 // After we've generated pop_size new chromosomes, we delete all the old ones.
 void Deme::compute_next_generation()
 {
-  // Add your implementation here
+   for(unsigned i; i<pop_size_/2; i++){
+      //randomly select parents
+      auto mother = select_parent();
+      auto father = select_parent();
+      //generate random number
+      std::uniform_real_distribution<double> dis(0, 1);
+      std::default_random_engine eng;
+      double rand_num_fem = dis(eng);
+      double rand_num_mal = dis(eng);
+      //if rand num smaller than mutation probibility, then mutate
+      if(rand_num_fem  < mut_rate_) 	mother->mutate();
+      if(rand_num_mal  < mut_rate_)	father->mutate();
+      //recombine the two parents 
+      std::pair<Chromosome*, Chromosome*> children = mother->recombine(father);
+      next_gen_.push_back(children.first);
+      next_gen_.push_back(children.second);
+   }
+   pop_.clear();
+   for(auto i: next_gen_)	pop_.push_back(i);
+   
 }
 
 // Return a copy of the chromosome with the highest fitness.
 const Chromosome* Deme::get_best() const
-{
-  // Add your implementation here
+{ Chromosome* best_chrome = pop_[0]; 
+  for(unsigned i = 1; i < pop_size_; i++){
+	  if(pop_[i]->get_fitness() > best_chrome->get_fitness())	
+		  best_chrome = pop_[i];
+  }
+  return best_chrome;
 }
 
 // Randomly select a chromosome in the population based on fitness and
 // return a pointer to that chromosome.
 Chromosome* Deme::select_parent()
-{
-  // Add your implementation here
+{  
+  //calculate sum of population fitness
+  double s = 0;
+  for(unsigned i; i < pop_size_; i++){
+          s += pop_[i]->get_fitness();
+  }
+
+  //generate a random number between 0 and S
+  std::random_device rd;
+  std::mt19937 eng(rd());
+  std::uniform_int_distribution<int> dis(0, s);
+  int rand_num = dis(eng);
+
+  //starting from the top of the population keep adding the fitnesses 
+  //to the partial sum P until P < S
+  //the individual for which P exceeds S is the chosen individual
+  double partial_sum = 0;
+  for(auto i : pop_){
+	  partial_sum += i ->get_fitness();
+	  if(rand_num < partial_sum)	return i;
+  }
+  return nullptr;
 }

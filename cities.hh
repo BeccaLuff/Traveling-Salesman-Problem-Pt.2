@@ -36,9 +36,10 @@ class Cities {
   double total_path_distance(const permutation_t& ordering) const;
   
   std::vector<coord_t> get_list() const {return city_list_;};
-  
-  void add_coord(coord_t coord){city_list_.push_back(coord);};
 
+  void add_coord(coord_t coord){city_list_.push_back(coord);};
+  
+  unsigned size() const {return city_list_.size();}
  private:
   city_list_t city_list_;
 };

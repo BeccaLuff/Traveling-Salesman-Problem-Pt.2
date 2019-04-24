@@ -7,7 +7,7 @@
 #include <random>
 
 #include "chromosome.hh"
-
+#include "cities.hh"
 //////////////////////////////////////////////////////////////////////////////
 // Generate a completely random permutation from a list of cities
 Chromosome::Chromosome(const Cities* cities_ptr)
