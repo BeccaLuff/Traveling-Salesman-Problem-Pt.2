@@ -5,7 +5,7 @@
 #include <algorithm>
 #include <cassert>
 #include <random>
-
+#include <chrono>
 #include "chromosome.hh"
 #include "cities.hh"
 //////////////////////////////////////////////////////////////////////////////
@@ -30,7 +30,7 @@ Chromosome::~Chromosome()
 void
 Chromosome::mutate()
 {
-  std::uniform_int_distribution<int> dis(0, order_.size());
+  std::uniform_int_distribution<int> dis(0, order_.size()-1);
   int p1 = dis(generator_);
   int p2 = dis(generator_);
   while(p1==p2){
@@ -47,14 +47,15 @@ std::pair<Chromosome*, Chromosome*>
 Chromosome::recombine(const Chromosome* other)
 {
 assert(is_valid());
-  assert(other->is_valid());
- 
+  assert(other->is_valid()); 
   std::uniform_int_distribution<int> dis(0, order_.size());
   std::pair<Chromosome*, Chromosome*> children;
   unsigned b = dis(generator_);
-  
-  std::uniform_int_distribution<int> dis1(b, order_.size());
-  unsigned e = dis1(generator_);
+  unsigned e = dis(generator_);
+  while( e < b ) {
+	  b = dis(generator_);
+	  e = dis(generator_);
+  }
 
   auto child1=Chromosome::create_crossover_child(this, other, b , e);
   auto child2=Chromosome::create_crossover_child(other, this,b , e);
@@ -106,7 +107,7 @@ double
 Chromosome::get_fitness() const
 {
 
-  return 1/(cities_ptr_->total_path_distance(order_) + 1);
+  return 1/(cities_ptr_->total_path_distance(order_));
 
 }
 
@@ -116,11 +117,18 @@ Chromosome::get_fitness() const
 bool
 Chromosome::is_valid() const
 {
-  for(unsigned int i=0; i<order_.size(); i++){
-    if(find(order_.begin(),order_.end(),i)==order_.end()){return false;}
+  Cities::permutation_t tmp = order_;
+  std::sort(tmp.begin(), tmp.end());
+  for(auto i = 0; i < order_.size(); i++){
+	  if(order_[i] > order_.size())	return false;
   }
+  for(auto i = 0; i < order_.size() -1; i++){
+	  if(order_[i] == order_[i+1])	return false;
+  }
+
   return true;
 }
+
 
 // Find whether a certain value appears in a given range of the chromosome.
 // Returns true if value is within the specified the range specified
@@ -128,5 +136,10 @@ Chromosome::is_valid() const
 bool
 Chromosome::is_in_range(unsigned value, unsigned begin, unsigned end) const
 {
-  return (value>=begin)&&(value<end);
+  for(unsigned i = begin; i < end; i++){
+	  if(order_[i] == value)	return true;
+  }
+  return false;
 }
+
+
