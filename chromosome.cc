@@ -30,12 +30,13 @@ Chromosome::~Chromosome()
 void
 Chromosome::mutate()
 {
-  // Add your implementation here
-  auto max = order_.size();
-  int p1 = rand() % max;
-  int p2 = rand() % max;
+  std::random_device rd;
+  std::mt19937 gen(rd());
+  std::uniform_int_distribution<> dis(0, order_.size());
+  int p1 = dis(gen);
+  int p2 = dis(gen);
   while(p1==p2){
-    p2 = rand() % max;
+    p2 = dis(gen);
   }
   std::swap(order_[p1],order_[p2]);
   assert(is_valid());
@@ -49,11 +50,16 @@ Chromosome::recombine(const Chromosome* other)
 {
 assert(is_valid());
   assert(other->is_valid());
-
-  auto max = order_.size();
+  std::random_device rd;
+  std::mt19937 gen(rd());
+  std::uniform_int_distribution<> dis(0, order_.size());
   std::pair<Chromosome*, Chromosome*> children;
-  unsigned b = rand() % max;
-  unsigned e = rand() % (max-1) + b;
+  unsigned b = dis(gen);
+  
+  std::random_device rx;
+  std::mt19937 gen1(rx());
+  std::uniform_int_distribution<> dis1(b, order_.size());
+  unsigned e = dis1(gen1);
 
   auto child1=Chromosome::create_crossover_child(this, other, b , e);
   auto child2=Chromosome::create_crossover_child(other, this,b , e);
