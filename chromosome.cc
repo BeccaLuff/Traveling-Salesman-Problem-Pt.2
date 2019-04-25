@@ -30,13 +30,11 @@ Chromosome::~Chromosome()
 void
 Chromosome::mutate()
 {
-  std::random_device rd;
-  std::mt19937 gen(rd());
-  std::uniform_int_distribution<> dis(0, order_.size());
-  int p1 = dis(gen);
-  int p2 = dis(gen);
+  std::uniform_int_distribution<int> dis(0, order_.size());
+  int p1 = dis(generator_);
+  int p2 = dis(generator_);
   while(p1==p2){
-    p2 = dis(gen);
+    p2 = dis(generator_);
   }
   std::swap(order_[p1],order_[p2]);
   assert(is_valid());
@@ -50,16 +48,13 @@ Chromosome::recombine(const Chromosome* other)
 {
 assert(is_valid());
   assert(other->is_valid());
-  std::random_device rd;
-  std::mt19937 gen(rd());
-  std::uniform_int_distribution<> dis(0, order_.size());
+ 
+  std::uniform_int_distribution<int> dis(0, order_.size());
   std::pair<Chromosome*, Chromosome*> children;
-  unsigned b = dis(gen);
+  unsigned b = dis(generator_);
   
-  std::random_device rx;
-  std::mt19937 gen1(rx());
-  std::uniform_int_distribution<> dis1(b, order_.size());
-  unsigned e = dis1(gen1);
+  std::uniform_int_distribution<int> dis1(b, order_.size());
+  unsigned e = dis1(generator_);
 
   auto child1=Chromosome::create_crossover_child(this, other, b , e);
   auto child2=Chromosome::create_crossover_child(other, this,b , e);
@@ -111,7 +106,7 @@ double
 Chromosome::get_fitness() const
 {
 
-  return 1/cities_ptr_->total_path_distance(order_);
+  return 1/(cities_ptr_->total_path_distance(order_) + 1);
 
 }
 
