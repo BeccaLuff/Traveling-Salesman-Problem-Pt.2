@@ -41,8 +41,9 @@ class Deme {
 
   double mut_rate_;  // Mutation rate (fraction in range [0,1])
   double get_mut(){return mut_rate_;}
-  
+
   unsigned pop_size_;
   std::default_random_engine generator_; // A random number generator for the various methods
-
 };
+
+
