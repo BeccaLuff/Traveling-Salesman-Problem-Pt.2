@@ -71,13 +71,12 @@ class Chromosome {
                          unsigned begin,
                          unsigned end) const;
 
-
   // A chromsome is valid if it has no repeated values in its permutation,
   // as well as no indices above the range (length) of the chromosome.
   bool is_valid() const;
 
   // Find whether a certain value appears in a given range of the chromosome.
-  // Returns true if value is within the specified the range specified
+  // Returns true if value is in order_ within the specified the range specified
   // [begin, end) and false otherwise.
   bool is_in_range(unsigned value, unsigned begin, unsigned end) const;
 
@@ -85,6 +84,4 @@ class Chromosome {
   Cities::permutation_t order_;  // The actual permutation of this chromosome
 
   std::default_random_engine generator_; // A random number generator for the various methods
-
-  double score_;  // A double to track this chromosomes score.
 };

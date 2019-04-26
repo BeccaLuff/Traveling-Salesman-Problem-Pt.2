@@ -4,7 +4,7 @@
  */
 
 #pragma once
-#include <chrono>
+
 #include "chromosome.hh"
 #include "cities.hh"
 
@@ -32,18 +32,18 @@ class Deme {
   const Chromosome* get_best() const;
 
  protected:
-  double total_fitness() const;
   // Randomly select a chromosome in the population based on fitness and
   // return a pointer to that chromosome.
   virtual Chromosome* select_parent();
 
   std::vector<Chromosome*> pop_;  // Population of Chromosomes
-  
-  double random_double() const;
-  std::vector<Chromosome*> child_pop_; // Population of temp Chromosomes produced by recombining parents
+  std::vector<Chromosome*> next_gen_; //population of next gen chromosomes
 
   double mut_rate_;  // Mutation rate (fraction in range [0,1])
+  double get_mut(){return mut_rate_;}
 
-//  unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
-//  std::default_random_engine generator_; // A random number generator for the various methods
+  unsigned pop_size_;
+  std::default_random_engine generator_; // A random number generator for the various methods
+  double random_double() const;
 };
+
