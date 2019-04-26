@@ -1,21 +1,25 @@
-/*
+ /*
  * Implementation for Chromosome class
  */
 
 #include <algorithm>
 #include <cassert>
 #include <random>
+#include <stdlib.h>
+#include <time.h>
 #include <chrono>
+
 #include "chromosome.hh"
-#include "cities.hh"
+
 //////////////////////////////////////////////////////////////////////////////
 // Generate a completely random permutation from a list of cities
 Chromosome::Chromosome(const Cities* cities_ptr)
   : cities_ptr_(cities_ptr),
     order_(random_permutation(cities_ptr->size())),
-    generator_(rand())
+    score_(get_fitness())
 {
   assert(is_valid());
+ // std::cout << "Creation success";
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -23,51 +27,56 @@ Chromosome::Chromosome(const Cities* cities_ptr)
 Chromosome::~Chromosome()
 {
   assert(is_valid());
+
 }
 
-//////////////////////////////////////////////////////////////////////////////
+
+/////////////////////////////////////////////////////////////////////////////
 // Perform a single mutation on this chromosome
 void
 Chromosome::mutate()
 {
-  std::uniform_int_distribution<int> dis(0, order_.size());
-  int p1 = dis(generator_);
-  int p2 = dis(generator_);
-  while(p1==p2){
-    p2 = dis(generator_);
+  
+  int i, j;
+
+  i = rand() % order_.size();
+  j = rand() % order_.size();
+
+  /*  To make sure i!=j */
+  while(i == j){
+    j = rand() % order_.size();
   }
-  std::swap(order_[p1],order_[p2]);
+
+  std::swap(order_[i], order_[j]);
+
   assert(is_valid());
 }
 
 //////////////////////////////////////////////////////////////////////////////
 // Return a pair of offsprings by recombining with another chromosome
 // Note: this method allocates memory for the new offsprings
+
 std::pair<Chromosome*, Chromosome*>
 Chromosome::recombine(const Chromosome* other)
 {
-  assert(is_valid());
-  assert(other->is_valid()); 
+	assert(is_valid());
+	assert(other->is_valid());
 
-  std::uniform_int_distribution<int> dis(0, order_.size());
-  std::pair<Chromosome*, Chromosome*> children;
-  unsigned b = dis(generator_);
-  unsigned e = dis(generator_);
-  while( e < b ) {
-	  b = dis(generator_);
-	  e = dis(generator_);
-  }
+	int half_order_size = order_.size()/2;
+	std::uniform_int_distribution<> distribution(0,half_order_size);
+	
+	generator_.seed(std::chrono::system_clock::now().time_since_epoch().count());
+	auto begin = distribution(generator_);
 
-  auto child1=Chromosome::create_crossover_child(this, other, b , e);
-  auto child2=Chromosome::create_crossover_child(other, this,b , e);
-  
-  assert(child1->is_valid());
-  children.first = child1;
-  
-  assert(child2->is_valid());
-  children.second = child2;
+//	std::cout<<"\nThe generated range is:"<<begin<<"\t size is :"<<order_.size()<<"\n";
 
-  return children;
+	
+	std::pair<Chromosome*, Chromosome*> offspring_pair;
+	offspring_pair = 
+		std::make_pair(
+				create_crossover_child(this, other, begin, begin+half_order_size-1),
+				create_crossover_child(other, this, begin, begin+half_order_size-1));
+	return offspring_pair;
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -107,9 +116,14 @@ Chromosome::create_crossover_child(const Chromosome* p1, const Chromosome* p2,
 double
 Chromosome::get_fitness() const
 {
+  double score;
 
-  return 1/(cities_ptr_->total_path_distance(order_));
+  /*Assuming a total_distance above 1500 miles for a TSP renders negative profit,
+    giving each unit of distance a cost of -4, our score is our maximum subtracting
+    our cost. Hence, shorter distances have a higher score */
 
+  score = 6000 - 4 * (this->calculate_total_distance());
+  return score;  
 }
 
 // A chromsome is valid if it has no repeated values in its permutation,
@@ -118,27 +132,27 @@ Chromosome::get_fitness() const
 bool
 Chromosome::is_valid() const
 {
-  Cities::permutation_t tmp = order_;
-  std::sort(tmp.begin(), tmp.end());
-  for(auto i = 0; i < order_.size(); i++){
-	  if(order_[i] > order_.size())	return false;
-  }
-  for(auto i = 0; i < order_.size() -1; i++){
-	  if(order_[i] == order_[i+1])	return false;
-  }
+    Cities::permutation_t temp = order_;
+    std::sort(temp.begin(), temp.end());
 
-  return true;
+    for(unsigned long int i=0; i < order_.size(); i++){
+      if(temp[i]!=i)  {return false;}
+    }
+
+    return true;
+    
 }
-
 
 // Find whether a certain value appears in a given range of the chromosome.
 // Returns true if value is within the specified the range specified
 // [begin, end) and false otherwise.
+
 bool
 Chromosome::is_in_range(unsigned value, unsigned begin, unsigned end) const
 {
-  for(unsigned i = begin; i < end; i++){
-	  if(order_[i] == value)	return true;
+  for(unsigned int i = begin; i < end; i++){
+    if(order_[i] == value)  {return true;}
   }
+
   return false;
 }

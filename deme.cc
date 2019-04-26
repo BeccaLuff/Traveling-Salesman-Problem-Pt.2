@@ -5,26 +5,29 @@
 
 #include "chromosome.hh"
 #include "deme.hh"
-#include <iostream>
+#include <chrono>
 
+///////////////////////////////////////////////////////////////
 // Generate a Deme of the specified size with all-random chromosomes.
 // Also receives a mutation rate in the range [0-1].
 Deme::Deme(const Cities* cities_ptr, unsigned pop_size, double mut_rate)
 {
- pop_size_ = pop_size;
- mut_rate_ = mut_rate;
- for(unsigned i = 0; i < pop_size; i++){
-         pop_.push_back(new Chromosome(cities_ptr));
- }
+	mut_rate_ = mut_rate;
+	for(unsigned i = 0; i < pop_size; i++)
+	{
+		pop_.push_back(new Chromosome (cities_ptr));
+	}
 
 }
 
+///////////////////////////////////////////////////////////////
 // Clean up as necessary
 Deme::~Deme()
 {
-
+  // Add your implementation here
 }
 
+///////////////////////////////////////////////////////////////
 // Evolve a single generation of new chromosomes, as follows:
 // We select pop_size/2 pairs of chromosomes (using the select() method below).
 // Each chromosome in the pair can be randomly selected for mutation, with
@@ -34,59 +37,92 @@ Deme::~Deme()
 // After we've generated pop_size new chromosomes, we delete all the old ones.
 void Deme::compute_next_generation()
 {
-   next_gen_.clear();
-   for(unsigned i = 0; i<pop_size_/2; i++){
-      //randomly select parents
-      auto mother = select_parent();
-      auto father = select_parent();
-      //generate random number
-      std::uniform_real_distribution<double> dis(0.0, 1.0);
-      double rand_num_fem = dis(generator_);
-      double rand_num_mal = dis(generator_);
-      //if rand num smaller than mutation probibility, then mutate
-      if(rand_num_fem  < mut_rate_)     mother->mutate();
-      if(rand_num_mal  < mut_rate_)     father->mutate();
-      //recombine the two parents
-      std::pair<Chromosome*, Chromosome*> children = mother->recombine(father);
-      next_gen_.push_back(children.first);
-      next_gen_.push_back(children.second);
-   }
-   pop_.clear();
-   for(auto i: next_gen_)       pop_.push_back(i);
+	child_pop_.clear();
+	while (child_pop_.size() < pop_.size())
+	{
+		auto parent1 = select_parent();
+		auto parent2 = select_parent();
 
+		if (random_double() < mut_rate_)
+		{
+			parent1->mutate();
+		}
+		if (random_double() < mut_rate_)
+		{
+			parent2->mutate();
+		}
+		auto child_pair = parent1->recombine(parent2);
+		child_pop_.push_back(child_pair.first);
+		child_pop_.push_back(child_pair.second);
+	}
+
+	pop_.clear();
+	for (auto i:child_pop_)
+	{
+		pop_.push_back(i);
+	}
 }
 
+///////////////////////////////////////////////////////////////
 // Return a copy of the chromosome with the highest fitness.
 const Chromosome* Deme::get_best() const
-{ Chromosome* best_chrome = pop_[0];
-  for(auto chrom: pop_){
-          if(chrom->get_fitness() > best_chrome->get_fitness())
-                  best_chrome = chrom;
-  }
-  return best_chrome;
+{
+	auto best = pop_[0];
+	for (auto i:pop_)
+	{
+		if (i->get_fitness()>best->get_fitness())
+		{
+			best = i;
+		}
+	}
+	return best;
 }
 
+///////////////////////////////////////////////////////////////
 // Randomly select a chromosome in the population based on fitness and
 // return a pointer to that chromosome.
 Chromosome* Deme::select_parent()
 {
-  //calculate sum of population fitness
-  double s = 0;
-  for(unsigned i = 0; i < pop_size_; i++){
-          s += pop_[i]->get_fitness();
-  }
+	double rand_gen = random_double();
 
-  //generate a random number between 0 and s
-  std::uniform_int_distribution<int> dis(0, s);
-  int rand_num = dis(generator_);
+	double target_fitness = rand_gen * total_fitness();
+	double current_total = 0;
 
-  //starting from the top of the population keep adding the fitnesses
-  //to the partial sum P until P < S
-  //the individual for which P exceeds S is the chosen individual
-  double partial_sum = 0;
-  for(auto i : pop_){
-          partial_sum += i ->get_fitness();
-          if(rand_num < partial_sum)    return i;
-  }
-  return nullptr;
+	for(auto i:pop_)
+	{
+		current_total += i->get_fitness();
+		if (current_total > target_fitness)
+		{
+			return i;
+		}
+	}
+
+	// if the sum never exceeds target, return last chromosome in the vector
+	return pop_[pop_.size()-1];
+
+}
+
+///////////////////////////////////////////////////////////////
+// Returns the sum of fitness of all Chromosomes
+double Deme::total_fitness() const
+{
+	double total = 0.;
+	for (auto i:pop_)
+	{
+		total+=i->get_fitness();
+	}
+	return total;
+}
+//////////////////////////////////////////////////////////////
+// Returns a random double between 0 and 1
+
+double Deme::random_double() const
+{
+
+	unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+	std::default_random_engine generator_(seed); // A random number generator for the various methods
+	//generate a random double between 0 and 1
+	std::uniform_real_distribution<double> distribution(0.0,1.0);
+//	generator_.seed(seed);
+	return distribution(generator_);
 }
