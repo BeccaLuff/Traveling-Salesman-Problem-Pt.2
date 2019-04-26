@@ -40,7 +40,7 @@ void Deme::compute_next_generation()
       auto mother = select_parent();
       auto father = select_parent();
       //generate random number
-      std::uniform_real_distribution<double> dis(0, 1);
+      std::uniform_real_distribution<double> dis(0.0, 1.0);
       double rand_num_fem = dis(generator_);
       double rand_num_mal = dis(generator_);
       //if rand num smaller than mutation probibility, then mutate
@@ -72,7 +72,7 @@ Chromosome* Deme::select_parent()
 {
   //calculate sum of population fitness
   double s = 0;
-  for(unsigned i; i < pop_size_; i++){
+  for(unsigned i = 0; i < pop_size_; i++){
           s += pop_[i]->get_fitness();
   }
 
@@ -90,3 +90,4 @@ Chromosome* Deme::select_parent()
   }
   return nullptr;
 }
+
