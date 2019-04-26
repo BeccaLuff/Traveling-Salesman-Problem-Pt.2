@@ -30,7 +30,7 @@ Chromosome::~Chromosome()
 void
 Chromosome::mutate()
 {
-  std::uniform_int_distribution<int> dis(0, order_.size()-1);
+  std::uniform_int_distribution<int> dis(0, order_.size());
   int p1 = dis(generator_);
   int p2 = dis(generator_);
   while(p1==p2){
@@ -46,8 +46,9 @@ Chromosome::mutate()
 std::pair<Chromosome*, Chromosome*>
 Chromosome::recombine(const Chromosome* other)
 {
-assert(is_valid());
+  assert(is_valid());
   assert(other->is_valid()); 
+
   std::uniform_int_distribution<int> dis(0, order_.size());
   std::pair<Chromosome*, Chromosome*> children;
   unsigned b = dis(generator_);
@@ -141,5 +142,3 @@ Chromosome::is_in_range(unsigned value, unsigned begin, unsigned end) const
   }
   return false;
 }
-
-

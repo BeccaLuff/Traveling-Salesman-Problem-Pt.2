@@ -44,5 +44,6 @@ class Deme {
 
   unsigned pop_size_;
   std::default_random_engine generator_; // A random number generator for the various methods
+  double random_double() const;
 };
 

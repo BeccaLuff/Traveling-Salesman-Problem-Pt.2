@@ -35,7 +35,7 @@ Deme::~Deme()
 void Deme::compute_next_generation()
 {
    next_gen_.clear();
-   for(unsigned i; i<pop_size_/2; i++){
+   for(unsigned i = 0; i<pop_size_/2; i++){
       //randomly select parents
       auto mother = select_parent();
       auto father = select_parent();
@@ -90,4 +90,3 @@ Chromosome* Deme::select_parent()
   }
   return nullptr;
 }
-
